@@ -1,34 +1,49 @@
-﻿namespace Services
+﻿using Infrastructure;
+
+namespace Services
 {
-    public class FilteredExchangeRatesManager(IExchangeRatesManager exchangeRatesManager) : IExchangeRatesManager
+    public class FilteredExchangeRatesManager : IExchangeRatesManager
     {
-        private readonly List<string> restrictedCurrencies = new List<string>();
+        private readonly IExchangeRatesManager _exchangeRatesManager;
+        private readonly IEnumerable<Currency> _restrictedCurrencies;
 
-        public async Task<ExchangeRates> GetRates(string currency)
+        public FilteredExchangeRatesManager(IExchangeRatesManager exchangeRatesManager, IEnumerable<Currency> restrictedCurrencies)
         {
-            return await exchangeRatesManager.GetRates(currency);
+            _exchangeRatesManager = exchangeRatesManager;
+            _restrictedCurrencies = restrictedCurrencies;
         }
 
-        public async Task<ExchangeRates> Convert(string currency, decimal amount)
+        public async Task<Result<ExchangeRates>> GetRatesAsync(Currency currency, CancellationToken cancellationToken)
         {
-            if (restrictedCurrencies.Contains(currency))
-            {
-                return null;
-            }
-
-            var response = await exchangeRatesManager.Convert(currency, amount);
-
-            foreach(var restrictedCurrency in restrictedCurrencies)
-            {
-                response.Rates.Remove(restrictedCurrency);
-            }
-
-            return response;
+            return await _exchangeRatesManager.GetRatesAsync(currency, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ExchangeRates>> GetHistoricalRates(string currency, DateOnly fromDate, DateOnly toDate)
+        public async Task<Result<ExchangeRates>> ConvertAsync(Currency currency, decimal amount, CancellationToken cancellationToken)
         {
-            return await exchangeRatesManager.GetHistoricalRates(currency, fromDate, toDate);
+            if (_restrictedCurrencies.Contains(currency))
+            {
+                return Result<ExchangeRates>.GetFailure("Not Allowed");
+            }
+
+            var response = await _exchangeRatesManager.ConvertAsync(currency, amount, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            return Result<ExchangeRates>.GetSuccess(new ExchangeRates(
+                response.Value.Amount,
+                response.Value.BaseCurrency,
+                response.Value.Date,
+                response.Value.Rates.Where(r => !_restrictedCurrencies.Contains(r.Currency))));
+        }
+
+        public async Task<Result<HistoricalExchangeRates>> GetHistoricalRatesAsync(
+            Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size, 
+            CancellationToken cancellationToken)
+        {
+            return await _exchangeRatesManager.GetHistoricalRatesAsync(
+                currency, fromDate, toDate, page, size, cancellationToken).ConfigureAwait(false);
         }
     }
 }

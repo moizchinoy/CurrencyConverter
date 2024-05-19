@@ -1,44 +1,35 @@
 ﻿namespace Services
 {
-    public class Currency
+    public class ExchangeRates
     {
-        private readonly string _value;
-
-        public Currency(string currency)
+        public ExchangeRates(decimal amount, Currency baseCurrency, DateOnly date, IEnumerable<Rate> rates)
         {
-            if (string.IsNullOrWhiteSpace(currency))
-            {
-                throw new ArgumentException($"'{nameof(currency)}' cannot be null or whitespace.", nameof(currency));
-            }
-
-            _value = currency.ToUpper();
+            Amount = amount;
+            BaseCurrency = baseCurrency;
+            Date = date;
+            Rates = rates;
         }
 
-        public override bool Equals(object obj)
+        public ExchangeRates(decimal amount, string baseCurrency, DateOnly date, Dictionary<string, decimal> rates)
         {
-            return obj is Currency currency &&
-                   _value == currency._value;
+            Amount = amount;
+            BaseCurrency = new Currency(baseCurrency);
+            Date = date;
+            Rates = rates.Select(x => new Rate(new Currency(x.Key), x.Value));
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_value);
-        }
-    }
-
-    public class ExchangeRates(decimal amount, string baseCurrency, DateOnly date, Dictionary<string, decimal> rates)
-    {
-        public decimal Amount { get; } = amount;
-        public string BaseCurrency { get; } = baseCurrency;
-        public DateOnly Date { get; } = date;
-        public Dictionary<string, decimal> Rates { get; } = rates;
+        public decimal Amount { get; }
+        public Currency BaseCurrency { get; }
+        public DateOnly Date { get; }
+        public IEnumerable<Rate> Rates { get; }
 
         public ExchangeRates Convert(decimal amount)
         {
-            var newRates = new Dictionary<string, decimal>(Rates.Select(r =>
-                new KeyValuePair<string, decimal>(r.Key, r.Value * amount)));
-
-            return new ExchangeRates(amount, BaseCurrency, Date, newRates);
+            return new ExchangeRates(
+                amount,
+                BaseCurrency,
+                Date,
+                Rates.Select(r => new Rate(r.Currency, r.Value * amount)));
         }
     }
 }

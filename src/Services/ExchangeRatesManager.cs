@@ -1,78 +1,113 @@
 ﻿using Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Services
 {
     public interface IExchangeRatesManager
     {
-        Task<ExchangeRates> GetRates(string currency);
+        Task<Result<ExchangeRates>> GetRatesAsync(Currency currency, CancellationToken cancellationToken);
 
-        Task<ExchangeRates> Convert(string currency, decimal amount);
+        Task<Result<ExchangeRates>> ConvertAsync(Currency currency, decimal amount, CancellationToken cancellationToken);
 
-        Task<IEnumerable<ExchangeRates>> GetHistoricalRates(string currency, DateOnly fromDate, DateOnly toDate);
+        Task<Result<HistoricalExchangeRates>> GetHistoricalRatesAsync(
+            Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size, CancellationToken cancellationToken);
     }
 
-    public class ExchangeRatesManager : IExchangeRatesManager
+    public class ExchangeRatesManager(IFrankfurterApi api, ILogger<ExchangeRatesManager> logger) : IExchangeRatesManager
     {
-        private readonly IFrankfurterApi _frankfurterApi;
-
-        private readonly Dictionary<string, SortedDictionary<DateOnly, ExchangeRates>> _dict = [];
-
-        public ExchangeRatesManager(IFrankfurterApi frankfurterApi)
+        private async Task<ExchangeRates> GetLatestRates(Currency currency, CancellationToken cancellationToken)
         {
-            _frankfurterApi = frankfurterApi;
+            var apiResponse = await api.GetLatestRatesAsync(currency.ToString(), cancellationToken);
+
+            return new ExchangeRates(apiResponse.Amount, apiResponse.Base,
+                apiResponse.Date, apiResponse.Rates);
         }
 
-        private void UpdateDict(ExchangeRates exchangeRates)
+        public async Task<Result<ExchangeRates>> GetRatesAsync(Currency currency, CancellationToken cancellationToken)
         {
-            if (!_dict.TryGetValue(exchangeRates.BaseCurrency, out SortedDictionary<DateOnly, ExchangeRates> value))
+            try
             {
-                _dict.Add(exchangeRates.BaseCurrency, new SortedDictionary<DateOnly, ExchangeRates>
+                var exchangeRates = await GetLatestRates(currency, cancellationToken);
+                if (exchangeRates is not null)
                 {
-                    { exchangeRates.Date, exchangeRates }
-                });
+                    return Result<ExchangeRates>.GetSuccess(exchangeRates);
+                }
+                else
+                {
+                    return Result<ExchangeRates>.GetFailure("Unable to get data at this moment");
+                }
             }
-            else if (!value.ContainsKey(exchangeRates.Date))
+            catch (Exception exception)
             {
-                value.Add(exchangeRates.Date, exchangeRates);
+                logger.LogError(exception, "Error occurred");
+                return Result<ExchangeRates>.GetFailure("Error occurred");
             }
         }
 
-        public async Task<ExchangeRates> GetRates(string currency)
+        public async Task<Result<ExchangeRates>> ConvertAsync(Currency currency, decimal amount, CancellationToken cancellationToken)
         {
-            var apiResponse = await _frankfurterApi.GetLatestRates(currency);
-
-            var exchangeRates = new ExchangeRates(
-                apiResponse.Amount,
-                apiResponse.Base,
-                apiResponse.Date,
-                apiResponse.Rates.GetDictionary());
-
-            UpdateDict(exchangeRates);
-
-            return exchangeRates;
-        }
-
-        public async Task<ExchangeRates> Convert(string currency, decimal amount)
-        {
-            var latestRates = await GetRates(currency);
-
-            return latestRates.Convert(amount);
-        }
-
-        public Task<IEnumerable<ExchangeRates>> GetHistoricalRates(string currency, DateOnly fromDate, DateOnly toDate)
-        {
-            var exchangeRatesList = new List<ExchangeRates>();
-
-            var currencyHistory = _dict[currency];
-
-            while (fromDate <= toDate)
+            try
             {
-                var exchangeRates = currencyHistory[fromDate];
-                exchangeRatesList.Add(exchangeRates);
-                fromDate = fromDate.AddDays(1);
+                var exchangeRates = await GetLatestRates(currency, cancellationToken);
+                if (exchangeRates is not null)
+                {
+                    var latestRates = exchangeRates.Convert(amount);
+                    return Result<ExchangeRates>.GetSuccess(latestRates);
+                }
+                else
+                {
+                    return Result<ExchangeRates>.GetFailure("Unable to get data at this moment");
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Error occurred");
+                return Result<ExchangeRates>.GetFailure("Error occurred");
+            }
+        }
+
+        public async Task<Result<HistoricalExchangeRates>> GetHistoricalRatesAsync(
+            Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size, 
+            CancellationToken cancellationToken)
+        {
+            if (fromDate > toDate)
+            {
+                return Result<HistoricalExchangeRates>.GetFailure(
+                    "From date can not be greater than To date");
             }
 
-            return Task.FromResult<IEnumerable<ExchangeRates>>(exchangeRatesList);
+            if (fromDate.ToDateTime(TimeOnly.MinValue) < DateTime.Now.Date.AddDays(-90))
+            {
+                return Result<HistoricalExchangeRates>.GetFailure(
+                    "From date can not be less than 90 days");
+            }
+
+            if (toDate.ToDateTime(TimeOnly.MinValue) > DateTime.Now.Date)
+            {
+                return Result<HistoricalExchangeRates>.GetFailure(
+                    "To date can not be greater than today");
+            }
+
+            try
+            {
+                var historicalData = new HistoricalData(api);
+                var result = await historicalData.GetHistoricalRatesAsync(
+                    currency, fromDate, toDate, page, size, cancellationToken);
+                if (result is not null)
+                {
+                    return Result<HistoricalExchangeRates>.GetSuccess(result);
+                }
+                else
+                {
+                    return Result<HistoricalExchangeRates>.GetFailure(
+                        "Unable to get data at this moment");
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Error occurred");
+                return Result<HistoricalExchangeRates>.GetFailure("Error occurred");
+            }
         }
     }
 }

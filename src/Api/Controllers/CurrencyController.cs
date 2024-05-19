@@ -15,27 +15,34 @@ namespace Api.Controllers
         }
 
         [HttpGet("latest")]
-        public async Task<ActionResult<ExchangeRates>> Get(string currency)
+        public async Task<ActionResult<Response>> Get(string currency, CancellationToken cancellationToken)
         {
-            var result = await _exchangeRatesManager.GetRates(currency);
-        
-            return (result != null) ? Ok(result) : NotFound();
+            var result = await _exchangeRatesManager.GetRatesAsync(new Currency(currency), cancellationToken);
+            return (result.IsSuccess) ? Ok(new Response(result.Value)) : BadRequest(result.Error);
         }
 
         [HttpGet("convert")]
-        public async Task<ActionResult<ExchangeRates>> Convert(string currency, decimal amount)
+        public async Task<ActionResult<Response>> Convert(string currency, decimal amount, CancellationToken cancellationToken)
         {
-            var result = await _exchangeRatesManager.Convert(currency, amount);
-
-            return (result != null) ? Ok(result) : NotFound();
+            var result = await _exchangeRatesManager.ConvertAsync(new Currency(currency), amount, cancellationToken);
+            return (result.IsSuccess) ? Ok(new Response(result.Value)) : BadRequest(result.Error);
         }
 
         [HttpGet("history")]
-        public async Task<ActionResult<IEnumerable<ExchangeRates>>> GetHistoricalRates(string currency, DateOnly fromDate, DateOnly toDate)
+        public async Task<ActionResult<HistoricalExchangeRates>> GetHistoricalRates(
+            string currency, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken, 
+            int size = 10, int page = 1)
         {
-            var result = await _exchangeRatesManager.GetHistoricalRates(currency, fromDate, toDate);
-            
-            return (result != null) ? Ok(result) : NotFound();
+            var result = await _exchangeRatesManager.GetHistoricalRatesAsync(
+                new Currency(currency), fromDate, toDate, page, size, cancellationToken);
+            if (result.IsSuccess)
+            {
+                return Ok(new HistoricalResponse(result.Value));
+            }
+            else
+            {
+                return BadRequest(result.Error);
+            }
         }
     }
 }
