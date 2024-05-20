@@ -12,21 +12,6 @@
     {
         public static PageDetails GetPageDetails(DateOnly fromDate, DateOnly toDate, int page, int size)
         {
-            if (fromDate > toDate)
-            {
-                throw new ArgumentException("From date can not be greater than To date");
-            }
-
-            if (page < 1)
-            {
-                throw new ArgumentException("page can not be less than 1");
-            }
-
-            if (size < 1)
-            {
-                throw new ArgumentException("size can not be less than 1");
-            }
-
             var dates = new List<DateOnly>();
             var startDate = fromDate;
             while (startDate <= toDate)

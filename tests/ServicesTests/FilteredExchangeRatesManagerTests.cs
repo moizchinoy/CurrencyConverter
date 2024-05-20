@@ -11,7 +11,7 @@ namespace ServicesTests
         public async Task Verify_Convert_Input(string currency, bool isSuccess, bool isResultNull)
         {
             // Arrange
-            var restrictedCurrencies = new List<Currency> 
+            var restrictedCurrencies = new List<Currency>
             {
                 new("TRY"),
                 new("PLN"),
@@ -20,12 +20,18 @@ namespace ServicesTests
             };
 
             var apiResult = Result<ExchangeRates>.GetSuccess(
-                new ExchangeRates(1, new Currency(currency), DateOnly.MaxValue, []));
+                new ExchangeRates
+                {
+                    Amount = 1,
+                    BaseCurrency = new Currency(currency),
+                    Date = DateOnly.MaxValue,
+                    Rates = []
+                });
 
             var mockExchangeRatesManager = new Mock<IExchangeRatesManager>();
             mockExchangeRatesManager
                 .Setup(x => x.ConvertAsync(
-                    It.IsAny<Currency>(), 
+                    It.IsAny<Currency>(),
                     It.IsAny<decimal>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(apiResult);
@@ -51,16 +57,24 @@ namespace ServicesTests
 
             var baseCurrency = new Currency("USD");
 
-            var apiResult = Result<ExchangeRates>.GetSuccess(new ExchangeRates(
-                1, 
-                baseCurrency, 
-                DateOnly.MaxValue, 
-                [new(new Currency(currency), 1)]));
+            var apiResult = Result<ExchangeRates>.GetSuccess(new ExchangeRates
+            {
+                Amount = 1,
+                BaseCurrency = baseCurrency,
+                Date = DateOnly.MaxValue,
+                Rates = [
+                    new Rate
+                    {
+                        Currency = new Currency(currency),
+                        Value = 1
+                    }
+                ]
+            });
 
             var mockExchangeRatesManager = new Mock<IExchangeRatesManager>();
             mockExchangeRatesManager
                 .Setup(x => x.ConvertAsync(
-                    It.IsAny<Currency>(), 
+                    It.IsAny<Currency>(),
                     It.IsAny<decimal>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(apiResult);

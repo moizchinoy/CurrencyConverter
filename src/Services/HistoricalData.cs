@@ -4,8 +4,8 @@ namespace Services
 {
     public class HistoricalData(IFrankfurterApi api)
     {
-        public async Task<HistoricalExchangeRates> GetHistoricalRatesAsync(
-            Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size, 
+        public async Task<HistoricalExchangeRates> GetRatesAsync(
+            Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size,
             CancellationToken cancellationToken)
         {
             var pageDetails = Pager.GetPageDetails(fromDate, toDate, page, size);
@@ -22,8 +22,7 @@ namespace Services
 
                 foreach (var item in windowData.Rates)
                 {
-                    var rates = item.Value.Select(x => new Rate(new Currency(x.Key), x.Value));
-                    dateRatesDict.Add(item.Key, rates);
+                    dateRatesDict.Add(item.Key, item.Value.ToRates());
                 }
             }
 

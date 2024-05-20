@@ -1,8 +1,22 @@
-﻿namespace Services
+﻿using System.Runtime.CompilerServices;
+
+namespace Services
 {
-    public class Rate(Currency currency, decimal value)
+    public static class RatesExtensions
     {
-        public Currency Currency { get; } = currency;
-        public decimal Value { get; } = value;
+        public static IEnumerable<Rate> ToRates(this Dictionary<string, decimal> dict)
+        {
+            return dict.Select(x => new Rate
+            {
+                Currency = new Currency(x.Key),
+                Value = x.Value
+            });
+        }
+    }
+
+    public class Rate
+    {
+        public Currency Currency { get; init; }
+        public decimal Value { get; init; }
     }
 }
