@@ -1,4 +1,4 @@
-﻿namespace Services
+﻿namespace Services.Helpers
 {
     public class Windows
     {
@@ -11,7 +11,7 @@
 
             while (firstWindowStartDate < lastWindowEndDate)
             {
-                DateOnly windowToDate = (firstWindowStartDate.Day == 26) ?
+                DateOnly windowToDate = firstWindowStartDate.Day == 26 ?
                     GetLastDayofTheMonth(firstWindowStartDate) : firstWindowStartDate.AddDays(5 - 1);
                 windows.Add((firstWindowStartDate, windowToDate));
                 firstWindowStartDate = windowToDate.AddDays(1);

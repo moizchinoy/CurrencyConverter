@@ -1,4 +1,4 @@
-﻿namespace Services
+﻿namespace Services.Models
 {
     public class Currency : IEquatable<Currency>
     {

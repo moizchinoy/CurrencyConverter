@@ -1,6 +1,6 @@
-﻿using Services;
+﻿using Services.Helpers;
 
-namespace ServicesTests
+namespace ServicesTests.Helpers
 {
     public class PagerTests
     {

@@ -1,6 +1,8 @@
-﻿namespace Services
+﻿using Services.Models;
+
+namespace Services.Extensions
 {
-    public static class Extensions
+    public static class CurrencyRateExtensions
     {
         public static IEnumerable<CurrencyRate> ToRates(this Dictionary<string, decimal> dict)
         {

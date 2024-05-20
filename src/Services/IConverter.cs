@@ -1,4 +1,6 @@
-﻿namespace Services
+﻿using Services.Models;
+
+namespace Services
 {
     public interface IConverter
     {

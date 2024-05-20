@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Services;
+using Services.Models;
 
 namespace ServicesTests
 {

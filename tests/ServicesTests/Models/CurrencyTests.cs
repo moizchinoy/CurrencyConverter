@@ -1,9 +1,6 @@
-using Infrastructure;
-using Services;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
+using Services.Models;
 
-namespace ServicesTests
+namespace ServicesTests.Models
 {
     public class CurrencyTests
     {

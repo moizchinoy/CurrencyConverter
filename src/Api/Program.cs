@@ -1,6 +1,7 @@
 using Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Services;
+using Services.Models;
 
 namespace Api
 {

@@ -1,4 +1,4 @@
-﻿namespace Services
+﻿namespace Services.Helpers
 {
     public class PageDetails
     {

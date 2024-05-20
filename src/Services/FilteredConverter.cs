@@ -1,4 +1,5 @@
 ﻿using Infrastructure;
+using Services.Models;
 
 namespace Services
 {

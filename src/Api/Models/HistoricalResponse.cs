@@ -1,6 +1,6 @@
-﻿using Services;
+﻿using Services.Models;
 
-namespace Api.Controllers
+namespace Api.Models
 {
     public class HistoricalResponse(HistoricalRates historicalRates)
     {

@@ -1,11 +1,11 @@
-﻿using Services;
+﻿using Services.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ServicesTests
+namespace ServicesTests.Helpers
 {
     public class WindowsTests
     {
@@ -15,7 +15,7 @@ namespace ServicesTests
         [InlineData("2020-01-31", "2020-01-31", "2020-01-26", "2020-01-31")]
         [InlineData("2024-02-29", "2024-02-29", "2024-02-26", "2024-02-29")]
         // TODO: Add more cases
-        public void Verify_SingleDate(string strStartDate, string strEndDate, 
+        public void Verify_SingleDate(string strStartDate, string strEndDate,
             string strExpectedStartDate, string strExpectedEndDate)
         {
             // Arrange
