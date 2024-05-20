@@ -14,6 +14,8 @@
             _value = currency.ToUpper();
         }
 
+        public static implicit operator string(Currency currency) => currency.ToString();
+
         public static bool operator ==(Currency a, Currency b)
         {
             return a.Equals(b);

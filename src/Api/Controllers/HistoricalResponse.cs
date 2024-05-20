@@ -5,22 +5,22 @@ namespace Api.Controllers
     public class HistoricalResponse(HistoricalRates historicalRates)
     {
         public decimal Amount { get; } = historicalRates.Amount;
-        public string BaseCurrency { get; } = historicalRates.BaseCurrency.ToString();
+        public string BaseCurrency { get; } = historicalRates.BaseCurrency;
         public DateOnly FromDate { get; } = historicalRates.FromDate;
         public DateOnly ToDate { get; } = historicalRates.ToDate;
-        public object DailyRates { get; } = historicalRates.Rates.Select(x => new
+        public object DailyRates { get; } = historicalRates.DailyRates.Select(x => new
         {
             Date = x.Key,
             Rates = x.Value.Select(x => new
             {
-                Currency = x.Currency.ToString(),
+                x.Currency,
                 x.Value,
             })
         });
         public object _links { get; } = new
         {
-            PreviousPage = historicalRates.PreviousPage,
-            NextPage = historicalRates.NextPage,
+            historicalRates.PreviousPage,
+            historicalRates.NextPage,
         };
     }
 }

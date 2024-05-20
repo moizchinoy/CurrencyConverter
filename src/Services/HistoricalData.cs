@@ -17,7 +17,7 @@ namespace Services
             foreach (var (windowFromDate, windowToDate) in windows)
             {
                 var windowData = await api.GetHistoricalRatesAsync(
-                        currency.ToString(), windowFromDate, windowToDate, cancellationToken)
+                        currency, windowFromDate, windowToDate, cancellationToken)
                     .ConfigureAwait(false);
 
                 foreach (var item in windowData.Rates)
@@ -32,7 +32,7 @@ namespace Services
                 BaseCurrency = currency,
                 FromDate = fromDate,
                 ToDate = toDate,
-                Rates = dateRatesDict,
+                DailyRates = dateRatesDict,
                 PreviousPage = pageDetails.PreviousPage,
                 NextPage = pageDetails.NextPage,
             };

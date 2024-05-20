@@ -7,7 +7,7 @@ namespace Services
     {
         private async Task<LatestRates> GetLatestRates(Currency currency, CancellationToken cancellationToken)
         {
-            var response = await api.GetLatestRatesAsync(currency.ToString(), cancellationToken);
+            var response = await api.GetLatestRatesAsync(currency, cancellationToken);
             if (response is null)
             {
                 return null;

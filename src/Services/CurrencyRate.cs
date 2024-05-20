@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Services
+﻿namespace Services
 {
     public class CurrencyRate
     {
