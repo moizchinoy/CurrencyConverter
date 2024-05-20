@@ -1,5 +1,10 @@
 # CurrencyConverter
 
+## Clone Repository
+```
+git clone https://github.com/moizchinoy/CurrencyConverter.git
+```
+
 ## Build
 ```
 dotnet build
