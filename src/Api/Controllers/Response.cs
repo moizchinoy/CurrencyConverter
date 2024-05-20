@@ -9,7 +9,7 @@ namespace Api.Controllers
         public DateOnly Date { get; } = latestRates.Date;
         public object Rates { get; } = latestRates.Rates.Select(x => new
         {
-            x.Currency,
+            Currency = x.Currency.ToString(),
             x.Value,
         });
     }

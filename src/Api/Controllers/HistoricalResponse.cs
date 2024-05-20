@@ -13,7 +13,7 @@ namespace Api.Controllers
             Date = x.Key,
             Rates = x.Value.Select(x => new
             {
-                x.Currency,
+                Currency = x.Currency.ToString(),
                 x.Value,
             })
         });
