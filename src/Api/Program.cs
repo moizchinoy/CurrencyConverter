@@ -20,14 +20,14 @@ namespace Api
                 return new CachedFrankfurterApi(frankfurterApi, memoryCache, logger);
             });
 
-            builder.Services.AddTransient<ExchangeRatesManager>();
-            builder.Services.AddTransient<IExchangeRatesManager>(sp =>
+            builder.Services.AddTransient<Converter>();
+            builder.Services.AddTransient<IConverter>(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
                 var restrictedCurrencies = config.GetSection("RestrictedCurrencies").Get<string[]>();
-                var exchangeRatesManager = sp.GetService<ExchangeRatesManager>();
-                return new FilteredExchangeRatesManager(
-                    exchangeRatesManager,
+                var converter = sp.GetService<Converter>();
+                return new FilteredConverter(
+                    converter,
                     restrictedCurrencies.Select(x => new Currency(x)));
             });
 

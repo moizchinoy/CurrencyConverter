@@ -2,32 +2,32 @@
 
 namespace Services
 {
-    public class FilteredExchangeRatesManager : IExchangeRatesManager
+    public class FilteredConverter : IConverter
     {
-        private readonly IExchangeRatesManager _exchangeRatesManager;
+        private readonly IConverter _converter;
         private readonly IEnumerable<Currency> _restrictedCurrencies;
 
-        public FilteredExchangeRatesManager(IExchangeRatesManager exchangeRatesManager, IEnumerable<Currency> restrictedCurrencies)
+        public FilteredConverter(IConverter converter, IEnumerable<Currency> restrictedCurrencies)
         {
-            _exchangeRatesManager = exchangeRatesManager;
+            _converter = converter;
             _restrictedCurrencies = restrictedCurrencies;
         }
 
-        public async Task<Result<ExchangeRates>> GetRatesAsync(Currency currency, CancellationToken cancellationToken)
+        public async Task<Result<LatestRates>> GetRatesAsync(Currency currency, CancellationToken cancellationToken)
         {
-            return await _exchangeRatesManager
+            return await _converter
                 .GetRatesAsync(currency, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task<Result<ExchangeRates>> ConvertAsync(Currency currency, decimal amount, CancellationToken cancellationToken)
+        public async Task<Result<LatestRates>> ConvertAsync(Currency currency, decimal amount, CancellationToken cancellationToken)
         {
             if (_restrictedCurrencies.Contains(currency))
             {
-                return Result<ExchangeRates>.GetFailure("Not Allowed");
+                return Result<LatestRates>.GetFailure("Not Allowed");
             }
 
-            var response = await _exchangeRatesManager
+            var response = await _converter
                 .ConvertAsync(currency, amount, cancellationToken)
                 .ConfigureAwait(false);
             if (!response.IsSuccess)
@@ -35,7 +35,7 @@ namespace Services
                 return response;
             }
 
-            return Result<ExchangeRates>.GetSuccess(new ExchangeRates
+            return Result<LatestRates>.GetSuccess(new LatestRates
             {
                 Amount = response.Value.Amount,
                 BaseCurrency = response.Value.BaseCurrency,
@@ -44,11 +44,11 @@ namespace Services
             });
         }
 
-        public async Task<Result<HistoricalExchangeRates>> GetHistoricalRatesAsync(
+        public async Task<Result<HistoricalRates>> GetHistoricalRatesAsync(
             Currency currency, DateOnly fromDate, DateOnly toDate, int page, int size,
             CancellationToken cancellationToken)
         {
-            return await _exchangeRatesManager
+            return await _converter
                 .GetHistoricalRatesAsync(currency, fromDate, toDate, page, size, cancellationToken)
                 .ConfigureAwait(false);
         }

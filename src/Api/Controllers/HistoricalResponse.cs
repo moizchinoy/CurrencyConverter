@@ -2,13 +2,13 @@
 
 namespace Api.Controllers
 {
-    public class HistoricalResponse(HistoricalExchangeRates historicalExchangeRates)
+    public class HistoricalResponse(HistoricalRates historicalRates)
     {
-        public decimal Amount { get; } = historicalExchangeRates.Amount;
-        public string BaseCurrency { get; } = historicalExchangeRates.BaseCurrency.ToString();
-        public DateOnly FromDate { get; } = historicalExchangeRates.FromDate;
-        public DateOnly ToDate { get; } = historicalExchangeRates.ToDate;
-        public object DailyRates { get; } = historicalExchangeRates.Rates.Select(x => new
+        public decimal Amount { get; } = historicalRates.Amount;
+        public string BaseCurrency { get; } = historicalRates.BaseCurrency.ToString();
+        public DateOnly FromDate { get; } = historicalRates.FromDate;
+        public DateOnly ToDate { get; } = historicalRates.ToDate;
+        public object DailyRates { get; } = historicalRates.Rates.Select(x => new
         {
             Date = x.Key,
             Rates = x.Value.Select(x => new
@@ -19,8 +19,8 @@ namespace Api.Controllers
         });
         public object _links { get; } = new
         {
-            PreviousPage = historicalExchangeRates.PreviousPage,
-            NextPage = historicalExchangeRates.NextPage,
+            PreviousPage = historicalRates.PreviousPage,
+            NextPage = historicalRates.NextPage,
         };
     }
 }

@@ -3,7 +3,7 @@ using Services;
 
 namespace ServicesTests
 {
-    public class FilteredExchangeRatesManagerTests
+    public class FilteredConverterTests
     {
         [Theory]
         [InlineData("TRY", false, true)]
@@ -19,8 +19,8 @@ namespace ServicesTests
                 new("MXN"),
             };
 
-            var apiResult = Result<ExchangeRates>.GetSuccess(
-                new ExchangeRates
+            var apiResult = Result<LatestRates>.GetSuccess(
+                new LatestRates
                 {
                     Amount = 1,
                     BaseCurrency = new Currency(currency),
@@ -28,15 +28,15 @@ namespace ServicesTests
                     Rates = []
                 });
 
-            var mockExchangeRatesManager = new Mock<IExchangeRatesManager>();
-            mockExchangeRatesManager
+            var mockConverter = new Mock<IConverter>();
+            mockConverter
                 .Setup(x => x.ConvertAsync(
                     It.IsAny<Currency>(),
                     It.IsAny<decimal>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(apiResult);
 
-            var sut = new FilteredExchangeRatesManager(mockExchangeRatesManager.Object, restrictedCurrencies);
+            var sut = new FilteredConverter(mockConverter.Object, restrictedCurrencies);
 
             // Act
             var result = await sut.ConvertAsync(new Currency(currency), 1, CancellationToken.None);
@@ -57,13 +57,13 @@ namespace ServicesTests
 
             var baseCurrency = new Currency("USD");
 
-            var apiResult = Result<ExchangeRates>.GetSuccess(new ExchangeRates
+            var apiResult = Result<LatestRates>.GetSuccess(new LatestRates
             {
                 Amount = 1,
                 BaseCurrency = baseCurrency,
                 Date = DateOnly.MaxValue,
                 Rates = [
-                    new Rate
+                    new CurrencyRate
                     {
                         Currency = new Currency(currency),
                         Value = 1
@@ -71,15 +71,15 @@ namespace ServicesTests
                 ]
             });
 
-            var mockExchangeRatesManager = new Mock<IExchangeRatesManager>();
-            mockExchangeRatesManager
+            var mockConverter = new Mock<IConverter>();
+            mockConverter
                 .Setup(x => x.ConvertAsync(
                     It.IsAny<Currency>(),
                     It.IsAny<decimal>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(apiResult);
 
-            var sut = new FilteredExchangeRatesManager(mockExchangeRatesManager.Object, restrictedCurrencies);
+            var sut = new FilteredConverter(mockConverter.Object, restrictedCurrencies);
 
             // Act
             var result = await sut.ConvertAsync(baseCurrency, 1, CancellationToken.None);

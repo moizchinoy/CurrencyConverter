@@ -2,12 +2,12 @@
 
 namespace Api.Controllers
 {
-    public class Response(ExchangeRates exchangeRates)
+    public class Response(LatestRates latestRates)
     {
-        public decimal Amount { get; } = exchangeRates.Amount;
-        public string BaseCurrency { get; } = exchangeRates.BaseCurrency.ToString();
-        public DateOnly Date { get; } = exchangeRates.Date;
-        public object Rates { get; } = exchangeRates.Rates.Select(x => new
+        public decimal Amount { get; } = latestRates.Amount;
+        public string BaseCurrency { get; } = latestRates.BaseCurrency.ToString();
+        public DateOnly Date { get; } = latestRates.Date;
+        public object Rates { get; } = latestRates.Rates.Select(x => new
         {
             Currency = x.Currency.ToString(),
             x.Value,

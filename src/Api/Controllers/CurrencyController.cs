@@ -7,33 +7,33 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class CurrencyController : ControllerBase
     {
-        private readonly IExchangeRatesManager _exchangeRatesManager;
+        private readonly IConverter _converter;
 
-        public CurrencyController(IExchangeRatesManager currencyConverter)
+        public CurrencyController(IConverter converter)
         {
-            _exchangeRatesManager = currencyConverter;
+            _converter = converter;
         }
 
         [HttpGet("latest")]
         public async Task<ActionResult<Response>> Get(string currency, CancellationToken cancellationToken)
         {
-            var result = await _exchangeRatesManager.GetRatesAsync(new Currency(currency), cancellationToken);
+            var result = await _converter.GetRatesAsync(new Currency(currency), cancellationToken);
             return (result.IsSuccess) ? Ok(new Response(result.Value)) : BadRequest(result.Error);
         }
 
         [HttpGet("convert")]
         public async Task<ActionResult<Response>> Convert(string currency, decimal amount, CancellationToken cancellationToken)
         {
-            var result = await _exchangeRatesManager.ConvertAsync(new Currency(currency), amount, cancellationToken);
+            var result = await _converter.ConvertAsync(new Currency(currency), amount, cancellationToken);
             return (result.IsSuccess) ? Ok(new Response(result.Value)) : BadRequest(result.Error);
         }
 
         [HttpGet("history")]
-        public async Task<ActionResult<HistoricalExchangeRates>> GetHistoricalRates(
+        public async Task<ActionResult<HistoricalRates>> GetHistoricalRates(
             string currency, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken, 
             int size = 10, int page = 1)
         {
-            var result = await _exchangeRatesManager.GetHistoricalRatesAsync(
+            var result = await _converter.GetHistoricalRatesAsync(
                 new Currency(currency), fromDate, toDate, page, size, cancellationToken);
             if (result.IsSuccess)
             {
