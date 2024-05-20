@@ -44,16 +44,12 @@ Following improvements can be done:
 5. Expiring historical data after 90 days
 6. Expiring/Fetching latest rates at 16:00 CET
 7. Currency validation
-8. Readme file
-9. Unit tests
-10. Configuration
+8. Unit tests
+9. Configuration
   a. Restricted currencies
   b. Remote api url
   c. Retries count
-11. Pass CancellationToken
-12. Use GetAwaiter false
-13. Rename the methods to Async
-14. 404 handling
+10. 404 handling
 
 Caching - Historical Data:
 1. No caching
