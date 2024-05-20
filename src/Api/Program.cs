@@ -20,22 +20,25 @@ namespace Api
                 return new CachedFrankfurterApi(frankfurterApi, memoryCache, logger);
             });
 
-
             builder.Services.AddTransient<ExchangeRatesManager>();
-            builder.Services.AddTransient<IExchangeRatesManager>(x =>
+            builder.Services.AddTransient<IExchangeRatesManager>(sp =>
             {
-                var exchangeRatesManager = x.GetService<ExchangeRatesManager>();
+                var config = sp.GetRequiredService<IConfiguration>();
+                var restrictedCurrencies = config.GetSection("RestrictedCurrencies").Get<string[]>();
+                var exchangeRatesManager = sp.GetService<ExchangeRatesManager>();
                 return new FilteredExchangeRatesManager(
                     exchangeRatesManager,
-                    [new("TRY"), new("PLN"), new("THB"), new("MXN")]);
+                    restrictedCurrencies.Select(x => new Currency(x)));
             });
 
             builder.Services.AddMemoryCache();
 
             builder.Services.AddHttpClient<FrankfurterApi>(
-                configureClient: static client =>
+                configureClient: static (sp, client) =>
                 {
-                    client.BaseAddress = new("https://api.frankfurter.app");
+                    var config = sp.GetRequiredService<IConfiguration>();
+                    var frankfurterApiUrl = config.GetValue<string>("FrankfurterApiUrl");
+                    client.BaseAddress = new(frankfurterApiUrl);
                 })
                 .AddStandardHedgingHandler();
 
